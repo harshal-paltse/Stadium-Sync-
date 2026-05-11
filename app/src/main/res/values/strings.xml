@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Stadium Sync</string>
+    <string name="login_title">Operator Login</string>
+    <string name="login_subtitle">Stadium Mobility Control</string>
+    <string name="email_hint">Email address</string>
+    <string name="password_hint">Password</string>
+    <string name="sign_in">Sign In</string>
+    <string name="offline_login">Continue Offline</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_match">Match</string>
+    <string name="nav_transit">Transit</string>
+    <string name="nav_alerts">Alerts</string>
+    <string name="nav_more">More</string>
+
+    <string name="offline_banner">You are offline. Showing cached data.</string>
+    <string name="syncing">Syncing…</string>
+    <string name="last_synced">Last synced: %s</string>
+    <string name="pending_actions">%d pending actions</string>
+
+    <string name="channel_critical">Critical Alerts</string>
+    <string name="channel_warning">Warnings</string>
+    <string name="channel_info">Information</string>
+
+    <string name="match_prediction">Match End Prediction</string>
+    <string name="crowd_pressure">Crowd Pressure</string>
+    <string name="transit_status">Transit Status</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="settings">Settings</string>
+    <string name="notifications">Notifications</string>
+    <string name="analytics">Analytics</string>
+    <string name="offline_mode">Offline Mode</string>
+    <string name="route_suggestions">Route Suggestions</string>
+</resources>
