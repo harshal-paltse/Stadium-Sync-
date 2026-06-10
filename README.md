@@ -1,185 +1,349 @@
-# Stadium Sync
+<div align="center">
 
-**Intelligent Stadium Mobility Management Platform**
+<img src="https://img.shields.io/badge/StadiumSync-v1.0.0-6C63FF?style=for-the-badge&logo=android&logoColor=white" />
 
-A production-ready Kotlin Android app that predicts match completion, estimates crowd exit pressure, and coordinates transport decisions for metro, buses, shuttles, and ride pickup zones around IPL stadiums.
+# StadiumSync
+
+### AI-Powered Stadium Mobility & Operations Platform
+
+*Real-time crowd intelligence - Transit orchestration - Offline-first Android app*
+
+[![Android](https://img.shields.io/badge/Android-API_26%2B-3DDC84?style=flat-square&logo=android&logoColor=white)](https://developer.android.com)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0.0-7F52FF?style=flat-square&logo=kotlin&logoColor=white)](https://kotlinlang.org)
+[![Jetpack Compose](https://img.shields.io/badge/Jetpack_Compose-2024.09-4285F4?style=flat-square&logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+
+</div>
+
+---
+
+## Overview
+
+**StadiumSync** is a professional-grade, offline-first Android application built for stadium operations teams managing large-scale cricket events. It combines real-time crowd pressure monitoring, AI-powered match-end prediction, and intelligent transit orchestration, all built to work seamlessly even without internet connectivity.
+
+The platform bridges the gap between match dynamics and mobility planning: as the game progresses, StadiumSync predicts crowd surge timing and proactively coordinates metro, bus, shuttle, and ride-pickup routes, enabling operators to act before chaos, not after.
+
+---
+
+## Features
+
+### Android App
+
+| Module | Description |
+|---|---|
+| **Dashboard** | Live match overview, crowd status, quick-action tiles |
+| **Live Match** | Real-time scoreboard, run rate, phase tracking, AI end-time prediction |
+| **Crowd Heatmap** | Gate-wise pressure levels (LOW to CRITICAL), trend indicators, density analytics |
+| **Transit Control** | Orchestrate metro holds, bus dispatches, shuttle diversions in one tap |
+| **Route Suggestions** | AI-scored multi-modal route suggestions with crowd, ETA, fare, and CO2 data |
+| **Ticket Scanner** | QR/barcode scan, seat navigation, gate routing |
+| **Notifications** | Priority-tiered alerts (CRITICAL / WARNING / INFO) with delivery tracking |
+| **Offline Mode** | Full functionality with WorkManager sync queue, actions replay on reconnect |
+| **Analytics** | Ops summary: crowd pressure score, passenger wave predictions, response times |
+| **Settings** | Role-based profile, theme toggle, sync preferences |
+
+### Backend (FastAPI)
+
+| Endpoint | Description |
+|---|---|
+| `POST /api/v1/auth/login` | JWT-based role authentication |
+| `GET /api/v1/match/live` | Live match data (score, overs, phase) |
+| `POST /api/v1/prediction/match-end` | ML-powered match end prediction with confidence scores |
+| `GET /api/v1/crowd/pressure` | Gate-wise crowd pressure with trend data |
+| `GET /api/v1/transit/routes` | Active transit routes with capacity and load |
+| `POST /api/v1/transit/action` | Log and execute transit control actions |
+| `POST /api/v1/sync/batch` | Offline-first batch sync endpoint |
+| `GET /api/v1/analytics/summary` | Full operations analytics summary |
+| `POST /api/v1/notifications/trigger` | Push notification trigger |
+| `GET /api/v1/health` | Health check |
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
-│                Android App (Kotlin)              │
-│  Jetpack Compose · Material 3 · MVVM · Hilt     │
-├──────────┬──────────┬──────────┬────────────────┤
-│ Present. │  Domain  │   Data   │   Infra        │
-│ Screens  │ UseCases │ Repos    │ Room/DataStore  │
-│ ViewMods │ Models   │ DAOs     │ WorkManager     │
-│ Nav/Theme│ Repos(I) │ Mock Svc │ Notifications   │
-└──────────┴──────────┴────┬─────┴────────────────┘
-                           │
-                    ┌──────┴──────┐
-                    │ FastAPI     │
-                    │ Backend     │
-                    ├─────────────┤
-                    │ PostgreSQL  │
-                    │ Redis       │
-                    │ XGBoost ML  │
-                    └─────────────┘
+StadiumSync/
+|-- app/                                    # Android Application
+|   |-- src/main/
+|   |   |-- java/com/stadiumsync/app/
+|   |   |   |-- core/
+|   |   |   |   |-- datastore/             # DataStore preferences
+|   |   |   |   |-- di/                    # Hilt dependency injection
+|   |   |   |   `-- network/               # Network monitor (connectivity)
+|   |   |   |-- data/
+|   |   |   |   |-- local/                 # Room database, DAOs, Entities
+|   |   |   |   |-- remote/mock/           # Mock API services (dev/offline)
+|   |   |   |   `-- repository/            # Repository implementations
+|   |   |   |-- domain/
+|   |   |   |   |-- model/                 # Domain models (Match, Crowd, Transit)
+|   |   |   |   |-- repository/            # Repository interfaces
+|   |   |   |   `-- usecase/               # Business logic use cases
+|   |   |   |-- notification/              # FCM notification helper
+|   |   |   |-- presentation/
+|   |   |   |   |-- components/            # Shared Compose UI components
+|   |   |   |   |-- navigation/            # NavHost + bottom navigation
+|   |   |   |   |-- screen/                # Feature screens + ViewModels
+|   |   |   |   |   |-- analytics/
+|   |   |   |   |   |-- crowd/
+|   |   |   |   |   |-- home/
+|   |   |   |   |   |-- login/
+|   |   |   |   |   |-- match/
+|   |   |   |   |   |-- notifications/
+|   |   |   |   |   |-- offline/
+|   |   |   |   |   |-- route/
+|   |   |   |   |   |-- settings/
+|   |   |   |   |   |-- ticket/
+|   |   |   |   |   `-- transit/
+|   |   |   |   `-- theme/                 # Material 3 theme + typography
+|   |   |   |-- sync/                      # WorkManager sync workers
+|   |   |   |-- MainActivity.kt
+|   |   |   `-- StadiumSyncApp.kt          # Hilt application entry point
+|   |   `-- res/                           # Resources (drawables, values, xml)
+|   |-- schemas/                           # Room database migration schemas
+|   |-- build.gradle.kts
+|   `-- proguard-rules.pro
+|
+|-- backend/                               # Python FastAPI Microservice
+|   |-- ml/
+|   |   `-- prediction_engine.py           # XGBoost / scikit-learn prediction
+|   |-- main.py                            # FastAPI app, routes, models
+|   |-- requirements.txt                   # Python dependencies
+|   |-- Dockerfile
+|   `-- docker-compose.yml                 # API + PostgreSQL + Redis stack
+|
+|-- gradle/
+|   |-- libs.versions.toml                 # Version catalog
+|   `-- wrapper/
+|-- build.gradle.kts
+|-- settings.gradle.kts
+|-- gradlew / gradlew.bat
+`-- README.md
 ```
 
-## Quick Start
+### Design Pattern
 
-### Android App
+The Android app follows **Clean Architecture** with three layers:
 
-1. **Open in Android Studio** — Import the `Stadium2` folder
-2. Android Studio will download the Gradle wrapper and dependencies automatically
-3. **Build & Run** — Select an emulator or device with API 26+, click Run
-4. **Login** — Use any email/password or tap "Continue Offline"
-
-### Backend (Optional)
-
-```bash
-cd backend
-docker-compose up -d
+```
+Presentation  -->  ViewModel  -->  UseCase  -->  Repository  -->  Data Source
+(Compose UI)       (StateFlow)    (Domain)      (Interface)      (Room / API)
 ```
 
-Or run locally:
-```bash
-cd backend
-pip install -r requirements.txt
-python main.py
-```
-
-API docs available at `http://localhost:8000/docs`
-
-### ML Pipeline
-
-```bash
-cd backend/ml
-pip install xgboost scikit-learn pandas numpy joblib
-python prediction_engine.py
-```
-
-## Screens
-
-| Screen | Description |
-|--------|-------------|
-| **Login** | Operator authentication with offline login option |
-| **Home Dashboard** | Live match summary, crowd metrics, transit status, quick actions |
-| **Live Match** | Scorecard, predicted end time, confidence gauge, match intelligence |
-| **Crowd Heatmap** | Canvas-based stadium density map, gate-level pressure bars |
-| **Transit Control** | Route status list, action execution with confirmation, recommendations |
-| **Route Suggestions** | Crowd dispersal routes with time estimates and crowd levels |
-| **Notifications** | Alert history with priority filtering (Critical/Warning/Info) |
-| **Offline Mode** | Network status, sync controls, cached data display, pending queue |
-| **Settings** | Dark mode toggle, notification preferences, sync interval, logout |
-| **Analytics** | Crowd trend chart, metrics dashboard, transport action log |
-
-## Features
-
-### Offline-First Architecture
-- **Room Database** caches all match, crowd, transit, and notification data locally
-- **WorkManager** retries sync automatically when network returns
-- **Local notification rules** trigger alerts from cached data without network
-- **Offline banner** and clear status indicators throughout the app
-- **Deferred sync queue** stores actions and syncs in batch on reconnection
-
-### Prediction Engine
-- XGBoost model for match end-time forecasting
-- Rules engine fallback when ML confidence is low
-- Crowd rush level classification
-- Transit urgency scoring
-- Synthetic data generator for training
-
-### Transport Coordination
-- Real-time status for metro, bus, shuttle, and ride pickup zones
-- Action system: Hold Metro, Dispatch Bus, Open Alternate Zone, Divert Route
-- Operator confirmation dialogs with audit logging
-- Automated recommendations based on crowd pressure thresholds
-
-### Theme System
-- **Light mode** (default): White background, black text
-- **Dark mode**: Toggle via Settings screen
-- Material 3 with custom color tokens for status chips
-- Professional enterprise-grade typography and spacing
+---
 
 ## Tech Stack
 
+### Android
+
 | Layer | Technology |
-|-------|-----------|
-| Language | Kotlin 2.0 |
-| UI | Jetpack Compose + Material 3 |
-| Architecture | MVVM + Clean Architecture |
-| DI | Hilt |
-| Network | Retrofit + OkHttp |
-| Local DB | Room |
-| Settings | DataStore Preferences |
-| Background | WorkManager |
-| State | Coroutines + StateFlow |
-| Navigation | Navigation Compose |
-| Backend | FastAPI (Python) |
-| ML | XGBoost + scikit-learn |
-| Database | PostgreSQL + Redis |
-| Container | Docker + Docker Compose |
+|---|---|
+| **UI** | Jetpack Compose - Material 3 - Navigation Compose |
+| **Architecture** | Clean Architecture - MVVM - StateFlow |
+| **DI** | Hilt (Dagger) - KSP |
+| **Database** | Room 2.6 - SQLite |
+| **Network** | Retrofit 2.11 - OkHttp 4 - Kotlinx Serialization |
+| **Async** | Kotlin Coroutines 1.8 - Flow |
+| **Offline Sync** | WorkManager 2.9 |
+| **Preferences** | DataStore Preferences 1.1 |
+| **Language** | Kotlin 2.0.0 |
+| **Min SDK** | API 26 (Android 8.0) |
+| **Target SDK** | API 35 (Android 15) |
 
-## Project Structure
+### Backend
+
+| Layer | Technology |
+|---|---|
+| **Framework** | FastAPI 0.115 - Uvicorn |
+| **ML Engine** | XGBoost 2.1 - scikit-learn 1.5 - NumPy - Pandas |
+| **Database** | PostgreSQL 16 - SQLAlchemy 2.0 - Alembic |
+| **Cache** | Redis 7.4 |
+| **Auth** | JWT (python-jose) - bcrypt (passlib) |
+| **Container** | Docker - Docker Compose |
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- **Android Studio** Ladybug (2024.2) or later
+- **JDK 17** or later
+- **Android device / emulator** running API 26+
+- **Python 3.11+** (for backend)
+- **Docker and Docker Compose** (for full backend stack)
+
+---
+
+### Android App Setup
+
+**1. Clone the repository**
+
+```bash
+git clone https://github.com/harshal-paltse/Stadium-Sync-.git
+cd Stadium-Sync-
+```
+
+**2. Open in Android Studio**
 
 ```
-app/src/main/java/com/stadiumsync/app/
-├── core/
-│   ├── di/AppModule.kt           # Hilt DI modules
-│   ├── network/NetworkMonitor.kt  # Connectivity observer
-│   └── datastore/UserPreferences.kt
-├── data/
-│   ├── local/
-│   │   ├── entity/Entities.kt    # Room entities
-│   │   ├── dao/Daos.kt           # Room DAOs
-│   │   └── StadiumSyncDatabase.kt
-│   ├── remote/mock/MockServices.kt
-│   └── repository/RepositoryImpls.kt
-├── domain/
-│   ├── model/Models.kt
-│   ├── repository/Repositories.kt
-│   └── usecase/UseCases.kt
-├── presentation/
-│   ├── theme/Theme.kt
-│   ├── components/Components.kt
-│   ├── navigation/Navigation.kt
-│   └── screen/{login,home,match,crowd,transit,route,notifications,offline,settings,analytics}/
-├── sync/SyncWorkers.kt
-├── notification/NotificationHelper.kt
-├── StadiumSyncApp.kt
-└── MainActivity.kt
+File -> Open -> select the root folder
 ```
 
-## API Endpoints
+**3. Sync Gradle**
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/v1/auth/login` | Operator authentication |
-| GET | `/api/v1/match/live` | Live match data |
-| POST | `/api/v1/prediction/match-end` | Predict match end time |
-| GET | `/api/v1/crowd/pressure` | Crowd pressure by gate |
-| GET | `/api/v1/transit/routes` | Transit route status |
-| POST | `/api/v1/transit/action` | Execute transit action |
-| POST | `/api/v1/sync/batch` | Batch sync offline data |
-| GET | `/api/v1/analytics/summary` | Analytics dashboard data |
-| POST | `/api/v1/notifications/trigger` | Trigger notification |
-| GET | `/api/v1/health` | Health check |
+```bash
+./gradlew build
+```
 
-## Configuration
+**4. Run the app**
 
-### API Keys (Optional)
-- Cricket data API key in `core/util/Constants.kt`
-- Google Maps API key in `AndroidManifest.xml`
-- Firebase `google-services.json` in `app/` directory
+```
+Select an emulator or connected device -> Run
+```
 
-### Backend URL
-- Default: `http://10.0.2.2:8000` (Android emulator to localhost)
-- Change in Settings screen or `UserPreferences.kt`
+> The app ships with **mock data** so it runs fully offline with no backend required for development.
+
+---
+
+### Backend Setup
+
+#### Option A - Docker (Recommended)
+
+```bash
+cd backend
+docker compose up --build -d
+```
+
+This spins up:
+- **API** at `http://localhost:8000`
+- **PostgreSQL** at `localhost:5432`
+- **Redis** at `localhost:6379`
+
+#### Option B - Local Python
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+#### API Documentation
+
+Once running, open:
+- **Swagger UI** at `http://localhost:8000/docs`
+- **ReDoc** at `http://localhost:8000/redoc`
+
+---
+
+## Default Credentials (Dev / Mock)
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@stadiumsync.com` | `admin123` |
+| Operator | `operator@stadiumsync.com` | `operator123` |
+| Transit Officer | `transit@stadiumsync.com` | `transit123` |
+
+> These are mock credentials for development only. Replace with secure auth in production.
+
+---
+
+## Key Domain Models
+
+```kotlin
+// Match phases drive the entire prediction pipeline
+enum class MatchPhase {
+    PRE_MATCH, POWERPLAY, MIDDLE_OVERS, DEATH_OVERS,
+    INNINGS_BREAK, SECOND_INNINGS, COMPLETED
+}
+
+// Crowd pressure - real-time per gate
+data class CrowdPressure(
+    val gateId: String,
+    val gateName: String,
+    val pressureLevel: PressureLevel,   // LOW / MODERATE / HIGH / CRITICAL
+    val densityPercent: Int,
+    val trend: PressureTrend,           // RISING / STABLE / FALLING
+    val estimatedPeople: Int
+)
+
+// Transit actions are logged and synced offline
+enum class TransitActionType {
+    HOLD_METRO, DISPATCH_BUS, OPEN_ALTERNATE_ZONE, DIVERT_ROUTE, SEND_CROWD_ALERT
+}
+
+// Role-based access control
+enum class UserRole { ADMIN, OPERATOR, VIEWER, TRANSIT_OFFICER }
+```
+
+---
+
+## Offline-First Sync Flow
+
+```
+User performs action  (e.g. HOLD_METRO)
+         |
+         v
+    Is Online?
+    +----------+----------+
+   YES                   NO
+    |                     |
+Execute               Queue in
+immediately           Room DB
+    |                     |
+    +----------+----------+
+               |
+               v
+    WorkManager SyncWorker
+    (runs when connectivity restored)
+               |
+               v
+    POST /api/v1/sync/batch
+               |
+               v
+    Mark actions as SYNCED
+```
+
+---
+
+## Contributing
+
+```bash
+# 1. Fork the repo
+# 2. Create a feature branch
+git checkout -b feature/your-feature-name
+
+# 3. Commit your changes
+git commit -m "feat: add your feature description"
+
+# 4. Push to your branch
+git push origin feature/your-feature-name
+
+# 5. Open a Pull Request
+```
+
+Please follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages.
+
+---
 
 ## License
 
-Proprietary — Stadium Sync Operations Platform
+```
+MIT License - Copyright (c) 2026 Harshal Paltse
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software.
+```
+
+---
+
+<div align="center">
+
+**Built with heart for smarter stadium operations**
+
+[Report Bug](https://github.com/harshal-paltse/Stadium-Sync-/issues) - [Request Feature](https://github.com/harshal-paltse/Stadium-Sync-/issues)
+
+</div>
